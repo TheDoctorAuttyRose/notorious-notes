@@ -128,9 +128,6 @@ http://admin:admin@hostname:5984/_utils#setup
 
 ## Step 3: Link Notorious on your Desktop to the backend
 
-
-
-
 ## Web deployment
 The `notorious_web` container spins up a web server you can use to access your notes through a web browser on the go. Take special note of the `volumes` section, which passes in the `.env` file to the container because the `DB_URL` string is required in order to connect back to your server.
 
@@ -193,3 +190,40 @@ This license was chosen to ensure this project stays open source and contributor
 Permissions of this strong copyleft license are conditioned on making available complete source code of licensed works and modifications, which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved. Contributors provide an express grant of patent rights.
 
 See `COPYING` for complete license text.
+
+## Setting up the webapp using GitHub Actions and Docker Hub
+
+To set up the webapp using GitHub Actions and Docker Hub, follow these steps:
+
+1. **Configure GitHub Secrets**: Add the following secrets to your repository:
+   - `DOCKER_USERNAME`: Your Docker Hub username.
+   - `DOCKER_PASSWORD`: Your Docker Hub password.
+
+2. **Update the GitHub Actions workflows**: Ensure that the `.github/workflows/master.yml` and `.github/workflows/master_old.yml` workflows are configured to build and deploy the Docker image automatically on push to the `master` branch.
+
+3. **Push changes to the `master` branch**: Make any necessary changes to the repository and push them to the `master` branch. This will trigger the GitHub Actions workflows to build and deploy the Docker image.
+
+4. **Access the webapp**: Once the Docker image is deployed, you can access the webapp using the URL provided by your Docker hosting service.
+
+## Configuring GitHub Secrets
+
+To configure GitHub Secrets for this project, follow these steps:
+
+1. Navigate to the repository on GitHub.
+2. Click on the "Settings" tab.
+3. In the left sidebar, click on "Secrets and variables" and then "Actions".
+4. Click the "New repository secret" button.
+5. Add the following secrets based on the information in the repository files:
+   - `GITHUB_TOKEN`: This token is automatically provided by GitHub Actions and does not need to be manually created. It is used in the workflows defined in `.github/workflows/master_old.yml` and `.github/workflows/master.yml`.
+   - `DOCKER_USERNAME`: Your Docker Hub username, used in the `docker_build` job in `.github/workflows/master_old.yml` and the `build` job in `.github/workflows/master.yml`.
+   - `DOCKER_PASSWORD`: Your Docker Hub password, used in the `docker_build` job in `.github/workflows/master_old.yml` and the `build` job in `.github/workflows/master.yml`.
+
+## Automating CouchDB Database Initialization
+
+To automate the initialization of the CouchDB database, follow these steps:
+
+1. **Create an initialization script**: Create a new script file, e.g., `init-couchdb.sh`, to initialize the CouchDB database. In the script, use `curl` commands to create the necessary databases, users, and set up security configurations. Ensure the script is executable by running `chmod +x init-couchdb.sh`.
+
+2. **Add a GitHub Actions workflow**: Add a new GitHub Actions workflow file, e.g., `.github/workflows/init-couchdb.yml`, to automate the execution of the initialization script. In the workflow file, define a job that runs the `init-couchdb.sh` script after the CouchDB container is up and running. Use the `docker-compose` command to start the services defined in `docker-compose.sample.yaml` and execute the initialization script.
+
+3. **Modify the Dockerfile**: Modify the `Dockerfile.prod` to include the initialization script. Add a step in the Dockerfile to copy the `init-couchdb.sh` script into the CouchDB container. Ensure the script is executed when the container starts by adding a `CMD` or `ENTRYPOINT` directive in the Dockerfile.
